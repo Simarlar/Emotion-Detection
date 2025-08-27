@@ -45,7 +45,7 @@ def detect_emotions(frame):
             emotion = analysis['dominant_emotion']
             results.append((x, y, w, h, emotion))
 
-            # Draw
+            # Draw results
             cv2.rectangle(frame_resized, (x, y), (x+w, y+h), (0, 255, 0), 2)
             cv2.putText(frame_resized, emotion, (x, y-10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
@@ -53,6 +53,7 @@ def detect_emotions(frame):
             print("⚠️ DeepFace could not analyze:", e)
 
     return frame_resized, results
+
 
 # ---------------- STREAMLIT APP ----------------
 st.set_page_config(page_title="Mood Mirror 🎭", layout="wide")
@@ -77,21 +78,33 @@ if mode == "Upload Image":
         else:
             st.warning("⚠️ No face detected.")
 
+
 # Webcam
 elif mode == "Webcam":
-    st.info("Click **Start Webcam** to begin.")
+    st.info("Click **Start Camera** to begin. Use **Stop Camera** to exit.")
 
-    FRAME_WINDOW = st.image([])
+    if "camera_running" not in st.session_state:
+        st.session_state["camera_running"] = False
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("▶️ Start Camera"):
+            st.session_state["camera_running"] = True
+    with col2:
+        if st.button("⏹️ Stop Camera"):
+            st.session_state["camera_running"] = False
+
+    FRAME_WINDOW = st.empty()
 
     cap = cv2.VideoCapture(0)
 
-    while run:
+    while st.session_state["camera_running"]:
         ret, frame = cap.read()
         if not ret:
             st.error("⚠️ Could not access webcam")
             break
 
         output, results = detect_emotions(frame)
-        FRAME_WINDOW.image(cv2.cvtColor(output, cv2.COLOR_BGR2RGB), channels="RGB")
+        FRAME_WINDOW.image(cv2.cvtColor(output, cv2.COLOR_BGR2RGB), channels="RGB", use_container_width=True)
 
     cap.release()
