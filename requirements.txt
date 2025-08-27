@@ -1,0 +1,14 @@
+tensorflow==2.13.0
+numpy==1.24.3
+mediapipe==0.10.14
+protobuf==4.25.3
+jax==0.4.28
+jaxlib==0.4.28
+opencv-python-headless==4.8.1.78
+deepface==0.0.93
+matplotlib==3.7.3
+pandas==1.5.3
+streamlit-webrtc
+streamlit
+
+
