@@ -105,6 +105,6 @@ elif mode == "Webcam":
             break
 
         output, results = detect_emotions(frame)
-        FRAME_WINDOW.image(cv2.cvtColor(output, cv2.COLOR_BGR2RGB), channels="RGB", use_container_width=True)
+        FRAME_WINDOW.image(cv2.cvtColor(output, cv2.COLOR_BGR2RGB), channels="RGB", use_column_width=True)
 
     cap.release()
