@@ -69,7 +69,7 @@ if mode == "Upload Image":
         img = cv2.imdecode(file_bytes, 1)
 
         output, results = detect_emotions(img)
-        st.image(cv2.cvtColor(output, cv2.COLOR_BGR2RGB), channels="RGB", use_container_width=True)
+        st.image(cv2.cvtColor(output, cv2.COLOR_BGR2RGB), channels="RGB", use_column_width=True)
 
         if results:
             st.subheader("Detected Emotions:")
