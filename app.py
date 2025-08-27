@@ -55,7 +55,9 @@ def detect_emotions(frame):
     return frame_resized, results
 
 # ---------------- STREAMLIT APP ----------------
-st.title("😊 Emotion Detection (DeepFace + MTCNN)")
+st.set_page_config(page_title="Mood Mirror 🎭", layout="wide")
+st.markdown("<h1 style='text-align: center; color: #FF6347;'>🎭 Mood Mirror: Real-Time Emotion Detection</h1>", unsafe_allow_html=True)
+
 mode = st.sidebar.radio("Choose Mode", ["Upload Image", "Webcam"])
 
 # Upload Image
@@ -66,10 +68,10 @@ if mode == "Upload Image":
         img = cv2.imdecode(file_bytes, 1)
 
         output, results = detect_emotions(img)
-        st.image(cv2.cvtColor(output, cv2.COLOR_BGR2RGB), channels="RGB", use_column_width=True)
+        st.image(cv2.cvtColor(output, cv2.COLOR_BGR2RGB), channels="RGB", use_container_width=True)
 
         if results:
-            st.write("Detected Emotions:")
+            st.subheader("Detected Emotions:")
             for (_, _, _, _, emotion) in results:
                 st.write(f"- {emotion}")
         else:
@@ -77,8 +79,7 @@ if mode == "Upload Image":
 
 # Webcam
 elif mode == "Webcam":
-    st.write("Click below to start webcam")
-    run = st.checkbox("Run Webcam")
+    st.info("Click **Start Webcam** to begin.")
 
     FRAME_WINDOW = st.image([])
 
