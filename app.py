@@ -47,7 +47,7 @@ def detect_emotions(frame):
             emotion = analysis['dominant_emotion']
             results.append((x, y, w, h, emotion))
 
-            # Draw results
+            # Draw results - FIXED: Draw on the original BGR frame, not RGB
             cv2.rectangle(frame_resized, (x, y), (x+w, y+h), (0, 255, 0), 2)
             cv2.putText(frame_resized, emotion, (x, y-10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
@@ -70,34 +70,45 @@ if mode == "Upload Image":
         img = cv2.imdecode(file_bytes, 1)
 
         output, results = detect_emotions(img)
-        st.image(cv2.cvtColor(output, cv2.COLOR_BGR2RGB), channels="RGB", use_container_width=True)
-
-        if results:
-            st.subheader("Detected Emotions:")
-            for (_, _, _, _, emotion) in results:
-                st.write(f"- {emotion}")
-        else:
-            st.warning("⚠️ No face detected.")
-
-
-# Webcam with streamlit-webrtc
-elif mode == "Webcam":
-    st.warning("⚠️ Webcam feature may not work on all cloud deployments due to network constraints.")
-    st.info("For best results, run this app locally for webcam functionality.")
-    
-    # Alternative: Use Streamlit's native camera input instead of WebRTC
-    picture = st.camera_input("Take a picture")
-    
-    if picture:
-        file_bytes = np.asarray(bytearray(picture.read()), dtype=np.uint8)
-        img = cv2.imdecode(file_bytes, 1)
-        
-        output, results = detect_emotions(img)
         st.image(cv2.cvtColor(output, cv2.COLOR_BGR2RGB), channels="RGB", use_column_width=True)
-        
+
         if results:
             st.subheader("Detected Emotions:")
             for (_, _, _, _, emotion) in results:
                 st.write(f"- {emotion}")
         else:
             st.warning("⚠️ No face detected.")
+
+
+# Webcam with streamlit-webrtc - FIXED
+elif mode == "Webcam":
+    st.info("Click **Start Webcam** to begin.")
+
+    class EmotionVideoTransformer(VideoTransformerBase):
+        def transform(self, frame):
+            try:
+                # Get frame in BGR format (OpenCV default)
+                img = frame.to_ndarray(format="bgr24")
+                
+                # Process the frame - detect_emotions expects BGR input
+                output, _ = detect_emotions(img)
+                
+                # Return the processed frame in BGR format
+                return output
+            except Exception as e:
+                st.error(f"Error in video processing: {e}")
+                # Return original frame if processing fails
+                return frame.to_ndarray(format="bgr24")
+
+    # Add error handling for WebRTC
+    try:
+        webrtc_streamer(
+            key="emotion-detection",
+            mode=WebRtcMode.SENDRECV,
+            video_transformer_factory=EmotionVideoTransformer,
+            media_stream_constraints={"video": True, "audio": False},
+            async_transform=True,
+        )
+    except Exception as e:
+        st.error("⚠️ Webcam feature is not available in this environment")
+        st.info("Please try the 'Upload Image' mode or run the app locally for webcam functionality")
